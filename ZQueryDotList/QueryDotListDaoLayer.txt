@@ -1,0 +1,136 @@
+package com.example.demo.dao.impl;
+
+import com.example.demo.dao.ApplicationDetailsDAO;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.query.NativeQuery;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import java.util.*;
+
+@Repository
+public class ApplicationDetailsDAOImpl
+        implements ApplicationDetailsDAO {
+
+    @Autowired
+    private SessionFactory sessionFactory;
+
+
+
+    @Override
+    public List<Map<String, Object>> getPOMemoList(
+            String queryString,
+            Map<String, String> request
+    ) {
+
+        Session session =
+                sessionFactory.getCurrentSession();
+
+
+
+
+        NativeQuery query =
+                session.createNativeQuery(queryString);
+
+
+
+
+        // Set Parameters
+
+        for (Map.Entry<String, String> entry
+                : request.entrySet()) {
+
+            if (entry.getValue() != null
+                    && !entry.getValue().trim().isEmpty()) {
+
+                if (entry.getKey()
+                        .equals("customerName")) {
+
+                    query.setParameter(
+                            entry.getKey(),
+                            "%" + entry.getValue() + "%"
+                    );
+                }
+
+                else {
+
+                    query.setParameter(
+                            entry.getKey(),
+                            entry.getValue()
+                    );
+                }
+            }
+        }
+
+
+
+
+        List<Object[]> resultList =
+                query.list();
+
+
+
+
+        /*
+            Final Output:
+
+            [
+                {
+                    customerName : Rajesh,
+                    customerId : CS00001
+                }
+            ]
+        */
+
+
+
+
+        Map<String, Map<String, Object>>
+                groupedApplications =
+                new LinkedHashMap<>();
+
+
+
+
+        for (Object[] row : resultList) {
+
+            String applicationId =
+                    (String) row[0];
+
+            String elementId =
+                    (String) row[1];
+
+            String elementValue =
+                    (String) row[2];
+
+
+
+
+            if (!groupedApplications
+                    .containsKey(applicationId)) {
+
+                groupedApplications.put(
+                        applicationId,
+                        new LinkedHashMap<>()
+                );
+            }
+
+
+
+
+            groupedApplications
+                    .get(applicationId)
+                    .put(elementId, elementValue);
+        }
+
+
+
+
+        return new ArrayList<>(
+                groupedApplications.values()
+        );
+    }
+}
