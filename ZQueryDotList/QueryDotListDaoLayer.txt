@@ -12,8 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.util.*;
 
 @Repository
-public class ApplicationDetailsDAOImpl
-        implements ApplicationDetailsDAO {
+public class ApplicationDetailsDAOImpl implements ApplicationDetailsDAO {
 
     @Autowired
     private SessionFactory sessionFactory;
@@ -21,62 +20,34 @@ public class ApplicationDetailsDAOImpl
 
 
     @Override
-    public List<Map<String, Object>> getPOMemoList(
-            String queryString,
-            Map<String, String> request
-    ) {
+    public List<Map<String, Object>> getPOMemoList(/String queryString, Map<String, String> request ) {
 
-        Session session =
-                sessionFactory.getCurrentSession();
+        Session session = sessionFactory.getCurrentSession();
 
-
-
-
-        NativeQuery query =
-                session.createNativeQuery(queryString);
-
-
-
+        NativeQuery query = session.createNativeQuery(queryString);
 
         // Set Parameters
 
-        for (Map.Entry<String, String> entry
-                : request.entrySet()) {
+        for (Map.Entry<String, String> entry : request.entrySet()) {
 
-            if (entry.getValue() != null
-                    && !entry.getValue().trim().isEmpty()) {
+            if (entry.getValue() != null && !entry.getValue().trim().isEmpty()) {
 
-                if (entry.getKey()
-                        .equals("customerName")) {
+                if (entry.getKey().equals("customerName")) {
 
-                    query.setParameter(
-                            entry.getKey(),
-                            "%" + entry.getValue() + "%"
-                    );
+                    query.setParameter( entry.getKey(), "%" + entry.getValue() + "%" );
                 }
 
                 else {
 
-                    query.setParameter(
-                            entry.getKey(),
-                            entry.getValue()
-                    );
+                    query.setParameter( entry.getKey(), entry.getValue() );
                 }
             }
         }
 
-
-
-
-        List<Object[]> resultList =
-                query.list();
-
-
-
+        List<Object[]> resultList = query.list();
 
         /*
             Final Output:
-
             [
                 {
                     customerName : Rajesh,
@@ -88,49 +59,24 @@ public class ApplicationDetailsDAOImpl
 
 
 
-        Map<String, Map<String, Object>>
-                groupedApplications =
-                new LinkedHashMap<>();
-
-
-
+        Map<String, Map<String, Object>> groupedApplications = new LinkedHashMap<>();
 
         for (Object[] row : resultList) {
 
-            String applicationId =
-                    (String) row[0];
+            String applicationId = (String) row[0];
 
-            String elementId =
-                    (String) row[1];
+            String elementId = (String) row[1];
 
-            String elementValue =
-                    (String) row[2];
+            String elementValue = (String) row[2];
 
-
-
-
-            if (!groupedApplications
-                    .containsKey(applicationId)) {
-
-                groupedApplications.put(
-                        applicationId,
-                        new LinkedHashMap<>()
-                );
+            if (!groupedApplications.containsKey(applicationId)) {
+                groupedApplications.put( applicationId, new LinkedHashMap<>());
             }
 
+            groupedApplications.get(applicationId).put(elementId, elementValue);
 
-
-
-            groupedApplications
-                    .get(applicationId)
-                    .put(elementId, elementValue);
         }
 
-
-
-
-        return new ArrayList<>(
-                groupedApplications.values()
-        );
+        return new ArrayList<>( groupedApplications.values());
     }
 }
